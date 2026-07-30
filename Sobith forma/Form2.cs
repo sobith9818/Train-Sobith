@@ -16,6 +16,8 @@ namespace Sobith_forma
         public Form2()
         {
             InitializeComponent();
+
+            MessageBox.Show("sobith");
         }
 
         private void Form2_Load(object sender, EventArgs e)
