@@ -8,11 +8,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Data.SQLite;
+using System.IO;
 
 namespace Sobith_forma
 {
     public partial class Form2 : Form
     {
+
+        private readonly string connectionString = @"Data Source=C:\Users\ksobi\source\repos\Sobith forma\Sobith forma\bin\Debug\Mass.db;Version=3;";
         public Form2()
         {
             InitializeComponent();
@@ -40,8 +44,18 @@ namespace Sobith_forma
 
         private void panel2_Paint(object sender, PaintEventArgs e)
         {
-          
+           
+
+           
+
         }
+
+
+
+
+
+
+
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

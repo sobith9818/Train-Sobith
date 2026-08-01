@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -12,6 +14,9 @@ namespace Sobith_forma
 {
     public partial class Form5 : Form
     {
+
+        private readonly string connectionString = @"Data Source=C:\Users\ksobi\source\repos\Sobith forma\Sobith forma\bin\Debug\Mass.db;Version=3;";
+
         public int EditIndex = -1;
         string classType;
         Form5 f5;
@@ -41,6 +46,20 @@ namespace Sobith_forma
         private void Form5_Load(object sender, EventArgs e)
 
         {
+           
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
             string json = File.ReadAllText("railwayStationsList.json");
@@ -155,6 +174,62 @@ namespace Sobith_forma
 
             }
 
+
+
+            try {
+
+                using (SQLiteConnection con = new SQLiteConnection(connectionString))
+                {
+                    con.Open();
+
+                    string query = @"
+        CREATE TABLE IF NOT EXISTS Bookings
+        (
+            BookingId INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            FromStation TEXT NOT NULL,
+            ToStation TEXT NOT NULL,
+
+            JourneyDate TEXT NOT NULL,
+
+            TrainNo TEXT NOT NULL,
+
+            ClassType TEXT NOT NULL,
+
+            Quota TEXT NOT NULL,
+
+            Mobile TEXT NOT NULL DEFAULT '9000000000'
+        );";
+
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                    {
+                        cmd.ExecuteNonQuery();
+
+                        MessageBox.Show("this is ok");
+                    }
+                }
+            }
+            catch (SQLiteException ex)
+            {
+                MessageBox.Show(
+                    "Database Error\n\n" + ex.Message,
+                    "SQLite Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+
+
+            }
+
+
+            
 
          
 
@@ -403,6 +478,12 @@ namespace Sobith_forma
             this.Hide();
             f6.ShowDialog();
             //f6.Show();
+
+
+
+
+
+
         }
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
@@ -542,6 +623,9 @@ namespace Sobith_forma
 
 
 
+
+
+
             string msg = "";
 
             // From
@@ -671,10 +755,74 @@ namespace Sobith_forma
             MessageBox.Show("Data Saved Successfully");
 
 
+            //this is datebase create to find area come chek
+
+            try
+            {
+                using (SQLiteConnection con = new SQLiteConnection(connectionString))
+                {
+                    con.Open();
+
+                    string query = @"
+        INSERT INTO Bookings
+        (
+            FromStation,
+            ToStation,
+            JourneyDate,
+            TrainNo,
+            ClassType,
+            Quota,
+            Mobile
+        )
+        VALUES
+        (
+            @FromStation,
+            @ToStation,
+            @JourneyDate,
+            @TrainNo,
+            @ClassType,
+            @Quota,
+            @Mobile
+        );";
+
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@FromStation", textBox1.Text.Trim());
+                        cmd.Parameters.AddWithValue("@ToStation", textBox3.Text.Trim());
+                        cmd.Parameters.AddWithValue("@JourneyDate", dateTimePicker1.Value.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@TrainNo", textBox6.Text.Trim());
+                        cmd.Parameters.AddWithValue("@ClassType", comboBox2.Text);
+                        cmd.Parameters.AddWithValue("@Quota", quota);
+                        cmd.Parameters.AddWithValue("@Mobile", textBox5.Text.Trim());
+
+                        int rows = cmd.ExecuteNonQuery();
+                        MessageBox.Show("ok this erro chck to finarea whit");
+                        if (rows > 0)
+                        {
+                            MessageBox.Show("Booking Saved Successfully");
+                        }
+                    }
+                }
+            }
+            catch (SQLiteException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
 
 
 
-         
+
+
+
+
+
+
+
+
 
 
 

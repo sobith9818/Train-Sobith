@@ -2,17 +2,23 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SQLite;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
 
 namespace Sobith_forma
 {
+
+    
+
     public partial class Form9 : Form
     {
+
+        private readonly string connectionString =@"Data Source=C:\Users\ksobi\source\repos\Sobith forma\Sobith forma\bin\Debug\Mass.db;Version=3;";
         public string From;
         public string To;
         public string TrainNo;
@@ -48,13 +54,62 @@ namespace Sobith_forma
 
         // ====== नया Method ======
 
+
+        private void LoadIRCTCAccounts()
+        {
+            try
+            {
+                comboBox1.Items.Clear();
+
+                using (SQLiteConnection con = new SQLiteConnection(connectionString))
+                {
+                    con.Open();
+
+                    //string query = @"SELECT Username
+                    //         FROM IRCTCAccounts
+                    //         ORDER BY Username";
+
+                    string query = "SELECT Username FROM IRCTCAccounts";
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                    {
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                //comboBox1.Items.Add(reader["Username"].ToString());
+
+                                comboBox1.Items.Add(reader.GetString(0));
+                                MessageBox.Show("Total User : " + comboBox1.Items.Count);
+                            }
+                        }
+                    }
+                }
+
+                if (comboBox1.Items.Count > 0)
+                    comboBox1.SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+
+
         private void AddControl(Control ctrl)
         {
             // Button पर MouseDown मत लगाओ
-            if (!(ctrl is Button))
+            //if (!(ctrl is Button))
+            //{
+            //    ctrl.MouseDown += Form_MouseDown;
+            //}
+
+            if (!(ctrl is Button) &&
+                   !(ctrl is ComboBox))
             {
                 ctrl.MouseDown += Form_MouseDown;
             }
+
 
             foreach (Control c in ctrl.Controls)
             {
@@ -73,13 +128,13 @@ namespace Sobith_forma
 
         private void Form9_Load(object sender, EventArgs e)
         {
-
             label1.Text = From + "_" + To;
             label2.Text= From + "_" + To;
             label3.Text = TrainNo;
             label4.Text = ClassType;
             label5.Text = Quota;
             label6.Text = Date;
+            LoadIRCTCAccounts();
 
 
 
@@ -153,5 +208,60 @@ namespace Sobith_forma
         {
 
         }
+
+        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            //try {
+            //    using (SQLiteConnection con = new SQLiteConnection(connectionString))
+            //    {
+            //        con.Open();
+            //        string query = @"SELECT Password
+            //                 FROM IRCTCAccounts
+            //                 WHERE Username=@Username";
+            //        using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+            //        {
+
+            //            cmd.Parameters.AddWithValue("@Username", comboBox1.Text);
+            //            object result = cmd.ExecuteScalar();
+
+            //        }
+            //    }
+
+
+            //}
+            //catch (Exception ex)
+
+            //{
+            //    MessageBox.Show(ex.Message);
+            //}
+
+
+            
+        }
+
+
+        //private void LoadIRCTCAccounts()
+        //{
+        //    comboBox1.Items.Clear();
+
+        //    using (SQLiteConnection con = new SQLiteConnection(connectionString))
+        //    {
+        //        con.Open();
+
+        //        string query = "SELECT Username FROM IRCTCAccounts ORDER BY Username";
+
+        //        using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+        //        using (SQLiteDataReader reader = cmd.ExecuteReader())
+        //        {
+        //            while (reader.Read())
+        //            {
+        //                comboBox1.Items.Add(reader["Username"].ToString());
+        //            }
+        //        }
+        //    }
+
+        //    if (comboBox1.Items.Count > 0)
+        //        comboBox1.SelectedIndex = 0;
+        //}
     }
 }

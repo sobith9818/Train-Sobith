@@ -12,7 +12,7 @@ namespace Sobith_forma
 {
     public partial class Form8 : Form
     {
-        public Form8()
+        private readonly string connectionString = @"Data Source=C:\Users\ksobi\source\repos\Sobith forma\Sobith forma\bin\Debug\Mass.db;Version=3;"; public Form8()
         {
             InitializeComponent();
         }
