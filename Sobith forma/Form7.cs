@@ -113,11 +113,54 @@
                     label13.Text,
                     _trainName,
                     totalfare
+                    
+
 
                 // Quota
 
 
                 );
+
+
+
+
+
+
+         
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             //f5.Show();     // Form5 दिखाओ
             //f6.Close();    // Form6 बंद करो
 

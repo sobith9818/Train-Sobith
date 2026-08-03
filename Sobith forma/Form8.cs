@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SQLite;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,8 @@ namespace Sobith_forma
 {
     public partial class Form8 : Form
     {
-        private readonly string connectionString = @"Data Source=C:\Users\ksobi\source\repos\Sobith forma\Sobith forma\bin\Debug\Mass.db;Version=3;"; public Form8()
+        private readonly string connectionString = @"Data Source=C:\Users\ksobi\source\repos\Sobith forma\Sobith forma\bin\Debug\Mass.db;Version=3;"; 
+        public Form8()
         {
             InitializeComponent();
         }
@@ -22,8 +24,111 @@ namespace Sobith_forma
             this.Close();
         }
 
+
+        private void LoadBookings()
+        {
+            try
+            {
+                DataGridViewComboBoxColumn slot =
+    (DataGridViewComboBoxColumn)dataGridView1.Columns["slot"];
+                slot.Items.Clear();
+                slot.Items.Add("Slot-1");
+                slot.Items.Add("Slot-2");
+
+                DataGridViewComboBoxColumn web =
+                    (DataGridViewComboBoxColumn)dataGridView1.Columns["Web"];
+                web.Items.Clear();
+                web.Items.Add("0");
+                web.Items.Add("1");
+
+                DataGridViewComboBoxColumn app =
+                    (DataGridViewComboBoxColumn)dataGridView1.Columns["App"];
+                app.Items.Clear();
+                app.Items.Add("0");
+                app.Items.Add("1");
+
+                dataGridView1.Rows.Clear();
+
+                using (SQLiteConnection con = new SQLiteConnection(connectionString))
+                {
+                    con.Open();
+
+                    string query = @"
+            SELECT
+                BookingId,
+                FromStation,
+                ToStation,
+                JourneyDate,
+                TrainNo,
+                ClassType,
+                Quota,
+                TrainSercherNamePF
+            FROM Bookings
+            ORDER BY BookingId DESC";
+                    
+                    
+                    int sr = 1;
+
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                    {
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                    
+                                dataGridView1.Rows.Add(
+                                reader["BookingId"].ToString(),
+                                        sr++,
+                                    reader["TrainSercherNamePF"].ToString(),
+                                    reader["FromStation"].ToString(),
+                                    reader["ToStation"].ToString(),
+                                    reader["JourneyDate"].ToString(),
+                                        
+                                    reader["ClassType"].ToString(),
+                                    reader["Quota"].ToString(),
+                                     "Slot-1",                                // SLOT
+                                       "0",                                     // Web
+                                        "0",                                    // App
+                                     "Open",                                 // Open
+                                     "Login",                                // Login
+                                         "Edit",                                 // Edit
+                                      "Delete"
+
+                                );
+                            }
+
+                            
+                        }
+                    }
+                }
+            }
+            catch (SQLiteException ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "SQLite Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+
+
+
+
+
         private void Form8_Load(object sender, EventArgs e)
         {
+            LoadBookings();
+
 
             //MessageBox.Show(DataStore.From);
             //MessageBox.Show(DataStore.To);
@@ -35,63 +140,63 @@ namespace Sobith_forma
 
 
             //dataGridView1.Rows.Add(
-                  //DataStore.numercount,
-                  //DataStore.passdelsts,
-                  //DataStore.From,        // From
-                  //DataStore.To,          // To
-                  //DataStore.Date,        // Date
-                  //DataStore.Quota,       // QT
-                  //DataStore.ClassType,   // CLS
-                  //"Slot-1",              // SLOT
-                  //"0",
-                  //"0",// Web
-                  // "Open",
-                  //"Login",
-                  //"Edit",
-                  //"Delete"
+            //DataStore.numercount,
+            //DataStore.passdelsts,
+            //DataStore.From,        // From
+            //DataStore.To,          // To
+            //DataStore.Date,        // Date
+            //DataStore.Quota,       // QT
+            //DataStore.ClassType,   // CLS
+            //"Slot-1",              // SLOT
+            //"0",
+            //"0",// Web
+            // "Open",
+            //"Login",
+            //"Edit",
+            //"Delete"
 
-    //              DataGridViewComboBoxColumn slot =
-    //            (DataGridViewComboBoxColumn)dataGridView1.Columns["slot"];
+            //              DataGridViewComboBoxColumn slot =
+            //            (DataGridViewComboBoxColumn)dataGridView1.Columns["slot"];
 
-    //        slot.Items.Clear();
-    //        slot.Items.Add("Slot-1");
-    //        slot.Items.Add("Slot-2");
+            //        slot.Items.Clear();
+            //        slot.Items.Add("Slot-1");
+            //        slot.Items.Add("Slot-2");
 
-    //        // Web Combo
-    //        DataGridViewComboBoxColumn web =
-    //            (DataGridViewComboBoxColumn)dataGridView1.Columns["Web"];
+            //        // Web Combo
+            //        DataGridViewComboBoxColumn web =
+            //            (DataGridViewComboBoxColumn)dataGridView1.Columns["Web"];
 
-    //        web.Items.Clear();
-    //        web.Items.Add("0");
-    //        web.Items.Add("1");
+            //        web.Items.Clear();
+            //        web.Items.Add("0");
+            //        web.Items.Add("1");
 
-    //        // App Combo
-    //        DataGridViewComboBoxColumn app =
-    //            (DataGridViewComboBoxColumn)dataGridView1.Columns["App"];
+            //        // App Combo
+            //        DataGridViewComboBoxColumn app =
+            //            (DataGridViewComboBoxColumn)dataGridView1.Columns["App"];
 
-    //        app.Items.Clear();
-    //        app.Items.Add("0");
-    //        app.Items.Add("1");
+            //        app.Items.Clear();
+            //        app.Items.Add("0");
+            //        app.Items.Add("1");
 
-    //        // Data Add
-    //        dataGridView1.Rows.Add(
-    //            DataStore.numercount,
-    //            DataStore.passdelsts,
-    //            DataStore.From,
-    //            DataStore.To,
-    //            DataStore.Date,
-    //            DataStore.Quota,
-    //            DataStore.ClassType,
-    //            "Slot-1",
-    //            "0",
-    //            "0",
-    //            "Open",
-    //            "Login",
-    //            "Edit",
-    //            "Delete"
-    //// Name
-    //// App
-    //);
+            //        // Data Add
+            //        dataGridView1.Rows.Add(
+            //            DataStore.numercount,
+            //            DataStore.passdelsts,
+            //            DataStore.From,
+            //            DataStore.To,
+            //            DataStore.Date,
+            //            DataStore.Quota,
+            //            DataStore.ClassType,
+            //            "Slot-1",
+            //            "0",
+            //            "0",
+            //            "Open",
+            //            "Login",
+            //            "Edit",
+            //            "Delete"
+            //// Name
+            //// App
+            //);
         }
 
 
@@ -149,84 +254,37 @@ namespace Sobith_forma
 
 
 
-        public void AddAllTickets()
-        {
+      //  public void AddAllTickets() 
+      //  {
 
-            DataGridViewComboBoxColumn slot =
-      (DataGridViewComboBoxColumn)dataGridView1.Columns["slot"];
+      //      DataGridViewComboBoxColumn slot =
+      //(DataGridViewComboBoxColumn)dataGridView1.Columns["slot"];
 
-            slot.Items.Clear();
-            slot.Items.Add("Slot-1");
-            slot.Items.Add("Slot-2");
+      //      slot.Items.Clear();
+      //      slot.Items.Add("Slot-1");
+      //      slot.Items.Add("Slot-2");
 
-            DataGridViewComboBoxColumn web =
-                (DataGridViewComboBoxColumn)dataGridView1.Columns["Web"];
+      //      DataGridViewComboBoxColumn web =
+      //          (DataGridViewComboBoxColumn)dataGridView1.Columns["Web"];
 
-            web.Items.Clear();
-            web.Items.Add("0");
-            web.Items.Add("1");
+      //      web.Items.Clear();
+      //      web.Items.Add("0");
+      //      web.Items.Add("1");
 
-            DataGridViewComboBoxColumn app =
-                (DataGridViewComboBoxColumn)dataGridView1.Columns["App"];
+      //      DataGridViewComboBoxColumn app =
+      //          (DataGridViewComboBoxColumn)dataGridView1.Columns["App"];
 
-            app.Items.Clear();
-            app.Items.Add("0");
-            app.Items.Add("1");
+      //      app.Items.Clear();
+      //      app.Items.Add("0");
+      //      app.Items.Add("1");
 
-            dataGridView1.Rows.Clear();
-
-            dataGridView1.Rows.Clear();
-
-            //foreach (Ticket t in DataStore.Tickets)
-            //{
-            //    dataGridView1.Rows.Add(
-            //          //t.Id,
-            //        t.numercount,
-            //        t.passdelsts,
-            //        t.From,
-            //        t.To,
-            //        t.Date,
-            //        t.Quota,
-            //        t.ClassType,
-            //        "Slot-1",
-            //        "0",
-            //        "0",
-            //        "Open",
-            //        "Login",
-            //        "Edit",
-            //        "Delete"
-            //    );
-            //}
-
-            for (int i = 0; i < DataStore.Tickets.Count; i++)
-            {
-                Ticket t = DataStore.Tickets[i];
-
-                // Number Update
-                t.numercount = (i + 1).ToString();
-
-                dataGridView1.Rows.Add(
-                    t.numercount,
-                    t.passdelsts,
-                    t.From,
-                    t.To,
-                    t.Date,
-                    t.Quota,
-                    t.ClassType,
-                    "Slot-1",
-                    "0",
-                    "0",
-                    "Open",
-                    "Login",
-                    "Edit",
-                    "Delete"
-                );
-            }
+          
 
 
 
 
-        }
+
+        //}
 
         private void CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
@@ -235,51 +293,72 @@ namespace Sobith_forma
 
                 if (dataGridView1.Columns[e.ColumnIndex].Name == "Column13")
                 {
-                    MessageBox.Show(dataGridView1.Columns[e.ColumnIndex].Name);
+                    //MessageBox.Show(dataGridView1.Columns[e.ColumnIndex].Name);
 
                     Form5 f5 = new Form5();
 
-                    f5.EditIndex = e.RowIndex;
 
-                    f5.LoadTicket(DataStore.Tickets[e.RowIndex]);
+                f5.BookingId = Convert.ToInt32(
+                           dataGridView1.Rows[e.RowIndex].Cells["Column8"].Value);
 
-                    f5.ShowDialog();
+                f5.IsEdit = true;
 
-                    AddAllTickets();
-                }
+                f5.ShowDialog();
+
+                // Database से Grid दुबारा Load करो
+                LoadBookings();
+
+                //f5.EditIndex = e.RowIndex;
+
+                //f5.LoadTicket(DataStore.Tickets[e.RowIndex]);
+
+                //f5.ShowDialog();
+
+                //AddAllTickets();
+            }
 
 
             else if (dataGridView1.Columns[e.ColumnIndex].Name == "Column14")
             {
-                //DialogResult result = MessageBox.Show(
-                //    "Delete this ticket?",
-                //    "Confirm",
-                //    MessageBoxButtons.YesNo,
-                //    MessageBoxIcon.Question);
 
-                //if (result == DialogResult.Yes)
-                //{
-                //    DataStore.Tickets.RemoveAt(e.RowIndex);
-
-                //    AddAllTickets();
-
-                //    MessageBox.Show("Ticket Deleted Successfully");
-                //}
-
-
-
-
-                if (MessageBox.Show("Delete this ticket?",
-       "Confirm",
-       MessageBoxButtons.YesNo,
-       MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageBox.Show("Delete this Booking ?",
+     "Confirm",
+     MessageBoxButtons.YesNo,
+     MessageBoxIcon.Question) == DialogResult.Yes)
                 {
-                    DataStore.Tickets.RemoveAt(e.RowIndex);
+                    try
+                    {
+                        int bookingId = Convert.ToInt32(
+                            dataGridView1.Rows[e.RowIndex].Cells["Column8"].Value);
 
-                    AddAllTickets();
+                        using (SQLiteConnection con = new SQLiteConnection(connectionString))
+                        {
+                            con.Open();
 
-                    MessageBox.Show("Ticket Deleted Successfully");
+                            string query = "DELETE FROM Bookings WHERE BookingId=@BookingId";
+
+                            using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                            {
+                                cmd.Parameters.AddWithValue("@BookingId", bookingId);
+
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
+
+                        MessageBox.Show("Booking Deleted Successfully");
+
+                        LoadBookings();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
                 }
+
+
+
+
+
             }
 
 
@@ -287,26 +366,42 @@ namespace Sobith_forma
 
         private void button2_Click(object sender, EventArgs e)
         {
-
-
-            DialogResult result = MessageBox.Show(
-       "Are you sure you want to delete all tickets?",
-       "Confirm",
-       MessageBoxButtons.YesNo,
-       MessageBoxIcon.Question);
-
-            if (result == DialogResult.Yes)
+            if (MessageBox.Show(
+      "Are you sure you want to delete all bookings?",
+      "Confirm",
+      MessageBoxButtons.YesNo,
+      MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                // List ka saara data delete
-                DataStore.Tickets.Clear();
+                try
+                {
+                    using (SQLiteConnection con = new SQLiteConnection(connectionString))
+                    {
+                        con.Open();
 
-                // DataGridView ki saari rows delete
-                dataGridView1.Rows.Clear();
+                        string query = "DELETE FROM Bookings";
 
-                MessageBox.Show("All Tickets Deleted Successfully");
+                        using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
 
-                this.Close();
+                    // Grid Refresh
+                    LoadBookings();
+
+                    MessageBox.Show("All Bookings Deleted Successfully");
+                    this.Close();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
+
+
+
+
+
 
 
         }
@@ -337,18 +432,14 @@ namespace Sobith_forma
                 Form9 f = new Form9();
 
 
-                f.From = row.Cells[2].Value.ToString();
-                f.To = row.Cells[3].Value.ToString();
-                f.Date = row.Cells[4].Value.ToString();
-                 
-                // अगर Ticket object में है
-                f.TrainNo = DataStore.Tickets[i].TrainNo;
-                
+             
 
-                f.Quota = row.Cells[5].Value.ToString();
+                f.From = row.Cells[3].Value.ToString();
+                f.To = row.Cells[4].Value.ToString();
+                f.Date = row.Cells[5].Value.ToString();
+                f.TrainNo = row.Cells[0].Value.ToString();
                 f.ClassType = row.Cells[6].Value.ToString();
-
-
+                f.Quota = row.Cells[7].Value.ToString();
 
 
                 f.StartPosition = FormStartPosition.Manual;
@@ -368,6 +459,11 @@ namespace Sobith_forma
 
 
 
+
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
 
         }
     }

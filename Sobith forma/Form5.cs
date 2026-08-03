@@ -9,15 +9,18 @@ using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using static System.Collections.Specialized.BitVector32;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ToolTip;
 
 namespace Sobith_forma
 {
     public partial class Form5 : Form
     {
-
+        private bool IsLoadingData = false;
         private readonly string connectionString = @"Data Source=C:\Users\ksobi\source\repos\Sobith forma\Sobith forma\bin\Debug\Mass.db;Version=3;";
-
+        public bool IsEdit = false;
+        public int BookingId = 0;
         public int EditIndex = -1;
+        private bool LockPassengerOptions = false;
         string classType;
         Form5 f5;
         private List<Station> stations;
@@ -152,7 +155,23 @@ namespace Sobith_forma
 
 
             comboBox2.SelectedIndex = 0;
-            
+
+
+            DataGridViewComboBoxColumn nation =
+(DataGridViewComboBoxColumn)dataGridView1.Columns["Column7"];
+
+            nation.Items.Clear();
+            nation.Items.Add("Indian");
+            nation.Items.Add("Foreigner");
+
+
+            DataGridViewComboBoxColumn food =
+(DataGridViewComboBoxColumn)dataGridView1.Columns["Column6"];
+
+            food.Items.Clear();
+            food.Items.Add("Veg");
+            food.Items.Add("Non Veg");
+            food.Items.Add("Jain");
 
             DataGridViewComboBoxColumn colSex =
          (DataGridViewComboBoxColumn)dataGridView1.Columns["colSex"];
@@ -161,7 +180,14 @@ namespace Sobith_forma
             colSex.Items.Add("F");
             DataGridViewComboBoxColumn Berth =
        (DataGridViewComboBoxColumn)dataGridView1.Columns["Berth"];
+
             Berth.Items.Add("Choose Berth");
+            Berth.Items.Add("No Preference");
+            Berth.Items.Add("Lower");
+            Berth.Items.Add("Middle");
+            Berth.Items.Add("Upper");
+            Berth.Items.Add("Side Lower");
+            Berth.Items.Add("Side Upper");
 
             dataGridView1.Rows.Add(6);
 
@@ -170,6 +196,9 @@ namespace Sobith_forma
                dataGridView1.Rows[i].Cells[0].Value = i + 1;
                 dataGridView1.Rows[i].Cells["colSex"].Value = "M";
                 dataGridView1.Rows[i].Cells["Berth"].Value = "Choose Berth";
+                dataGridView1.Rows[i].Cells["Column6"].Value = "Veg";
+                dataGridView1.Rows[i].Cells["Column7"].Value = "Indian";
+
 
 
             }
@@ -198,14 +227,14 @@ namespace Sobith_forma
 
             Quota TEXT NOT NULL,
 
-            Mobile TEXT NOT NULL DEFAULT '9000000000'
+            TrainSercherNamePF TEXT NOT NULL DEFAULT 'sercher'
         );";
 
                     using (SQLiteCommand cmd = new SQLiteCommand(query, con))
                     {
                         cmd.ExecuteNonQuery();
 
-                        MessageBox.Show("this is ok");
+
                     }
                 }
             }
@@ -228,12 +257,177 @@ namespace Sobith_forma
 
             }
 
+            if (IsEdit)
+            {
+                using (SQLiteConnection con = new SQLiteConnection(connectionString))
+                {
+                    con.Open();
 
-            
+                    string query = "SELECT * FROM Bookings WHERE BookingId=@BookingId";
 
-         
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                    {   
+                        cmd.Parameters.AddWithValue("@BookingId", BookingId);
+
+                        using (SQLiteDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                IsLoadingData = true;   
+                                textBox1.Text = reader["FromStation"].ToString();
+                                textBox4.Text = reader["FromStation"].ToString();
+                                textBox3.Text = reader["ToStation"].ToString();
+                                dateTimePicker1.Text = reader["JourneyDate"].ToString();
+                                textBox6.Text = reader["TrainNo"].ToString();
+                                comboBox2.Text = reader["ClassType"].ToString();
+                                textBox8.Text = reader["TrainSercherNamePF"].ToString();
+
+                                string quota = reader["Quota"].ToString();
+
+                                radioButton1.Checked = quota == "GN";
+                                radioButton2.Checked = quota == "LD";
+                                radioButton3.Checked = quota == "TQ";
+                                radioButton4.Checked = quota == "PT";
+
+                                IsLoadingData = false;
+
+                                listBox1.Visible = false;
+                                listBox2.Visible = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+
+            CreatePassengersTable();
 
         }
+
+
+
+
+        private void CreatePassengersTable()
+        {
+            try
+            {
+                using (SQLiteConnection con = new SQLiteConnection(connectionString))
+                {
+                    con.Open();
+
+                    string query = @"
+CREATE TABLE IF NOT EXISTS Passengers
+(
+    PassengerId INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    BookingId INTEGER NOT NULL,
+
+    Sno INTEGER NOT NULL
+        CHECK (Sno BETWEEN 1 AND 6),
+
+    PassengerName TEXT NOT NULL
+        CHECK (length(trim(PassengerName)) > 0),
+
+    Age INTEGER NOT NULL
+        CHECK (Age BETWEEN 1 AND 125),
+
+    Gender TEXT NOT NULL
+        DEFAULT 'M'
+        CHECK (Gender IN ('M','F','T')),
+
+    BerthPreference TEXT NOT NULL
+        DEFAULT 'No Preference'
+        CHECK
+        (
+            BerthPreference IN
+            (
+                'No Preference',
+                'Lower',
+                'Middle',
+                'Upper',
+                'Side Lower',
+                'Side Upper'
+            )
+        ),
+
+    FoodPreference TEXT NOT NULL
+        DEFAULT 'Non Veg'
+        CHECK
+        (
+            FoodPreference IN
+            (
+                'Veg',
+                'Non Veg',
+                'Jain'
+            )
+        ),
+
+    Nationality TEXT NOT NULL
+        DEFAULT 'Indian',
+
+    Mobile TEXT NOT NULL
+        DEFAULT '9800000000'
+        CHECK
+        (
+            length(Mobile)=10
+            AND Mobile GLOB '[0-9]*'
+        ),
+
+    AutoUpgrade INTEGER NOT NULL
+        DEFAULT 1
+        CHECK (AutoUpgrade IN (0,1)),
+
+    ConfirmBerth INTEGER NOT NULL
+        DEFAULT 1
+        CHECK (ConfirmBerth IN (0,1)),
+
+    CreatedOn TEXT NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (BookingId)
+        REFERENCES Bookings(BookingId)
+        ON DELETE CASCADE,
+
+    UNIQUE (BookingId, Sno)
+);";
+
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                MessageBox.Show(
+                    "Passengers Table Created Successfully",
+                    "Success",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
+            catch (SQLiteException ex)
+            {
+                MessageBox.Show(
+                    "SQLite Error\n\n" + ex.Message,
+                    "SQLite Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Error\n\n" + ex.Message,
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+
+
+
+
+
+
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -287,20 +481,33 @@ namespace Sobith_forma
 
         private void radioButton3_CheckedChanged(object sender, EventArgs e)
         {
+            
+
+
             if (radioButton3.Checked)
             {
+                LockPassengerOptions = true;
+
                 dataGridView1.Rows.Clear();
                 dataGridView1.RowCount = 4;
 
                 for (int i = 0; i < 4; i++)
                 {
                     dataGridView1.Rows[i].Cells["Column1"].Value = i + 1;
+                    dataGridView1.Rows[i].Cells["colSex"].Value = "M";
+                    dataGridView1.Rows[i].Cells["Berth"].Value = "No Preference";
+                    dataGridView1.Rows[i].Cells["Column6"].Value = "Veg";
+                    dataGridView1.Rows[i].Cells["Column7"].Value = "Indian";
                 }
             }
+
         }
 
         private void dataGridView1_CellContentClick_2(object sender, DataGridViewCellEventArgs e)
         {
+
+
+
 
         }
 
@@ -313,12 +520,18 @@ namespace Sobith_forma
         {
             if (radioButton4.Checked)
             {
+                LockPassengerOptions = true;
+
                 dataGridView1.Rows.Clear();
                 dataGridView1.RowCount = 4;
 
                 for (int i = 0; i < 4; i++)
                 {
                     dataGridView1.Rows[i].Cells["Column1"].Value = i + 1;
+                    dataGridView1.Rows[i].Cells["colSex"].Value = "M";
+                    dataGridView1.Rows[i].Cells["Berth"].Value = "No Preference";
+                    dataGridView1.Rows[i].Cells["Column6"].Value = "Veg";
+                    dataGridView1.Rows[i].Cells["Column7"].Value = "Indian";
                 }
             }
         }
@@ -368,6 +581,12 @@ namespace Sobith_forma
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
 
+
+
+            if (IsLoadingData )
+                return;
+
+
             if (stations == null)
                 return;
             listBox1.Items.Clear();
@@ -391,7 +610,7 @@ namespace Sobith_forma
             }
 
             listBox1.Visible = listBox1.Items.Count > 0;
-
+            //listBox1.Visible = false; 
 
 
 
@@ -401,6 +620,9 @@ namespace Sobith_forma
 
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
+
+            if (IsLoadingData)
+                return;
 
             if (stations == null)
                 return;
@@ -587,11 +809,38 @@ namespace Sobith_forma
 
 
 
-
+            if (quota == "GN")
+            {
+                radioButton1.Checked = true;
+            }
+            else if (quota == "LD")
+            {
+                radioButton2.Checked = true;
+            }
+            else if (quota == "TQ")
+            {
+                radioButton3.Checked = true;
+            }
+            else if (quota == "PT")
+            {
+                radioButton4.Checked = true;
+            }
 
 
             // GN = 6 Passenger
-            if (quota == "GN")
+            //if (quota == "GN")
+            //{
+            //    dataGridView1.RowCount = 6;
+
+            //    for (int i = 0; i < 6; i++)
+            //    {
+            //        dataGridView1.Rows[i].Cells["Column1"].Value = i + 1;
+            //        dataGridView1.Rows[i].Cells["colSex"].Value = "M";
+            //        dataGridView1.Rows[i].Cells["Berth"].Value = "Choose Berth";
+            //    }
+            //}
+
+            if (quota == "GN" || quota == "LD")
             {
                 dataGridView1.RowCount = 6;
 
@@ -600,10 +849,10 @@ namespace Sobith_forma
                     dataGridView1.Rows[i].Cells["Column1"].Value = i + 1;
                     dataGridView1.Rows[i].Cells["colSex"].Value = "M";
                     dataGridView1.Rows[i].Cells["Berth"].Value = "Choose Berth";
+                    dataGridView1.Rows[i].Cells["Column6"].Value = "Veg";
+                    dataGridView1.Rows[i].Cells["Column7"].Value = "Indian";
                 }
             }
-
-            // TQ या PT = 4 Passenger
             else if (quota == "TQ" || quota == "PT")
             {
                 dataGridView1.RowCount = 4;
@@ -612,9 +861,28 @@ namespace Sobith_forma
                 {
                     dataGridView1.Rows[i].Cells["Column1"].Value = i + 1;
                     dataGridView1.Rows[i].Cells["colSex"].Value = "M";
-                    dataGridView1.Rows[i].Cells["Berth"].Value = "Choose Berth";
+                    dataGridView1.Rows[i].Cells["Berth"].Value = "No Preference";
+                    dataGridView1.Rows[i].Cells["Column6"].Value = "Veg";
+                    dataGridView1.Rows[i].Cells["Column7"].Value = "Indian";
                 }
             }
+
+
+            //// TQ या PT = 4 Passenger
+            //else if (quota == "TQ" || quota == "PT")
+            //{
+            //    dataGridView1.RowCount = 4;
+
+            //    for (int i = 0; i < 4; i++)
+            //    {
+            //        dataGridView1.Rows[i].Cells["Column1"].Value = i + 1;
+            //        dataGridView1.Rows[i].Cells["colSex"].Value = "M";
+            //        dataGridView1.Rows[i].Cells["Berth"].Value = "Choose Berth";
+            //    }
+            //}
+
+
+
 
         }
 
@@ -734,7 +1002,7 @@ namespace Sobith_forma
             t.numercount = t.numercount = (DataStore.Tickets.Count + 1).ToString(); ;
             t.passdelsts = textBox8.Text;
             t.From = textBox1.Text;
-            t.To = textBox3.Text;
+            t.To = textBox3.Text    ;
             t.Date = dateTimePicker1.Text;
             t.TrainNo = textBox6.Text;
             t.TrainName = textBox7.Text;
@@ -752,7 +1020,7 @@ namespace Sobith_forma
                 DataStore.Tickets[EditIndex] = t;
             }
 
-            MessageBox.Show("Data Saved Successfully");
+            //MessageBox.Show("Data Saved Successfully");
 
 
             //this is datebase create to find area come chek
@@ -772,7 +1040,7 @@ namespace Sobith_forma
             TrainNo,
             ClassType,
             Quota,
-            Mobile
+            TrainSercherNamePF
         )
         VALUES
         (
@@ -782,7 +1050,7 @@ namespace Sobith_forma
             @TrainNo,
             @ClassType,
             @Quota,
-            @Mobile
+            @TrainSercherNamePF
         );";
 
                     using (SQLiteCommand cmd = new SQLiteCommand(query, con))
@@ -793,14 +1061,100 @@ namespace Sobith_forma
                         cmd.Parameters.AddWithValue("@TrainNo", textBox6.Text.Trim());
                         cmd.Parameters.AddWithValue("@ClassType", comboBox2.Text);
                         cmd.Parameters.AddWithValue("@Quota", quota);
-                        cmd.Parameters.AddWithValue("@Mobile", textBox5.Text.Trim());
+                        cmd.Parameters.AddWithValue("@TrainSercherNamePF", textBox8.Text.Trim());
 
-                        int rows = cmd.ExecuteNonQuery();
-                        MessageBox.Show("ok this erro chck to finarea whit");
-                        if (rows > 0)
+                         cmd.ExecuteNonQuery();
+
+                        cmd.CommandText = "SELECT last_insert_rowid();";
+
+                        int bookingId = Convert.ToInt32(cmd.ExecuteScalar());
+
+                        MessageBox.Show("BookingId = " + bookingId);
+
+
+                        for (int i = 0; i < dataGridView1.Rows.Count; i++)
                         {
-                            MessageBox.Show("Booking Saved Successfully");
+                            DataGridViewRow row = dataGridView1.Rows[i];
+
+                            // खाली Row Skip
+                            if (row.Cells["Column2"].Value == null)
+                                continue;
+
+                            string queryPassenger = @"
+INSERT INTO Passengers
+(
+    BookingId,
+    Sno,
+    PassengerName,
+    Age,
+    Gender,
+    BerthPreference,
+    FoodPreference,
+    Nationality,
+    Mobile,
+    AutoUpgrade,
+    ConfirmBerth
+)
+VALUES
+(
+    @BookingId,
+    @Sno,
+    @PassengerName,
+    @Age,
+    @Gender,
+    @BerthPreference,
+    @FoodPreference,
+    @Nationality,
+    @Mobile,
+    @AutoUpgrade,
+    @ConfirmBerth
+);";
+
+                            using (SQLiteCommand cmdPassenger = new SQLiteCommand(queryPassenger, con))
+                            {
+                                cmdPassenger.Parameters.AddWithValue("@BookingId", bookingId);
+
+                                cmdPassenger.Parameters.AddWithValue("@Sno",
+                                    row.Cells["Column1"].Value);
+
+                                cmdPassenger.Parameters.AddWithValue("@PassengerName",
+                                    row.Cells["Column2"].Value);
+
+                                cmdPassenger.Parameters.AddWithValue("@Age",
+                                    row.Cells["Column3"].Value);
+
+                                cmdPassenger.Parameters.AddWithValue("@Gender",
+                                    row.Cells["colSex"].Value);
+
+                                cmdPassenger.Parameters.AddWithValue("@BerthPreference",
+                                    row.Cells["Berth"].Value);
+
+                                cmdPassenger.Parameters.AddWithValue("@FoodPreference",
+                                    row.Cells["Column6"].Value);
+
+                                cmdPassenger.Parameters.AddWithValue("@Nationality",
+                                    row.Cells["Column7"].Value);
+
+                                cmdPassenger.Parameters.AddWithValue("@Mobile",
+                                    textBox7.Text.Trim());
+
+                                cmdPassenger.Parameters.AddWithValue("@AutoUpgrade",
+                                    checkBox1.Checked ? 1 : 0);
+
+                                cmdPassenger.Parameters.AddWithValue("@ConfirmBerth",
+                                    checkBox2.Checked ? 1 : 0);
+
+                                MessageBox.Show(
+    "Row = " + i +
+    "\nName = " + Convert.ToString(row.Cells["Column2"].Value) +
+    "\nAge = " + Convert.ToString(row.Cells["Column3"].Value) +
+    "\nFood = " + Convert.ToString(row.Cells["Column6"].Value)
+);
+
+                                cmdPassenger.ExecuteNonQuery();
+                            }
                         }
+
                     }
                 }
             }
@@ -868,6 +1222,20 @@ namespace Sobith_forma
                 radioButton3.Checked = true;
             else if (t.Quota == "PT")
                 radioButton4.Checked = true;
-        }   
+        }
+
+        private void taktalPt(object sender, DataGridViewCellCancelEventArgs e)
+        {
+
+            if (!LockPassengerOptions)
+                return;
+
+            string col = dataGridView1.Columns[e.ColumnIndex].Name;
+
+            if (col == "Berth" || col == "Column6" || col == "Column7")
+            {
+                e.Cancel = true;
+            }
+        }
     }
 }

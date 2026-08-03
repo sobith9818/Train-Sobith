@@ -139,12 +139,12 @@ namespace Sobith_forma
                 f8.Owner = this;
                 f8.Show();
 
-                f8.AddAllTickets();
+                //f8.AddAllTickets();
             }
             else
             {
                 f8.BringToFront();
-                f8.AddAllTickets();
+                //f8.AddAllTickets();
             }
 
 

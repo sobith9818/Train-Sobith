@@ -79,7 +79,7 @@ namespace Sobith_forma
                                 //comboBox1.Items.Add(reader["Username"].ToString());
 
                                 comboBox1.Items.Add(reader.GetString(0));
-                                MessageBox.Show("Total User : " + comboBox1.Items.Count);
+                                //MessageBox.Show("Total User : " + comboBox1.Items.Count);
                             }
                         }
                     }
@@ -155,7 +155,7 @@ namespace Sobith_forma
 
         private void button1_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("show");
+            
             this.Close();
             
         }
@@ -164,11 +164,11 @@ namespace Sobith_forma
         private void button2_Click(object sender, EventArgs e)
         {
 
-            MessageBox.Show("show they all pari");
+            
 
             if (IsPair)
             {
-                MessageBox.Show("Pair का Pair नहीं बन सकता।");
+
                 return;
             }
 

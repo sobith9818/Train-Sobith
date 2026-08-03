@@ -53,7 +53,7 @@ namespace Sobith_forma
 
         private async void Form6_Load(object sender, EventArgs e)
         {
-            CheckRadioButtons();
+            //CheckRadioButtons();
 
             try
             {
@@ -294,18 +294,18 @@ namespace Sobith_forma
 
 
 
-        private void CheckRadioButtons()
-        {
-            TimeSpan currentTime = DateTime.Now.TimeOfDay;
+        //private void CheckRadioButtons()
+        //{
+        //    TimeSpan currentTime = DateTime.Now.TimeOfDay;
 
-            TimeSpan showTime = new TimeSpan(1, 0, 0);    // 05:00 AM
-            TimeSpan hideTime = new TimeSpan(11, 20, 0);  // 11:20 AM
+        //    TimeSpan showTime = new TimeSpan(1, 0, 0);    // 05:00 AM
+        //    TimeSpan hideTime = new TimeSpan(11, 20, 0);  // 11:20 AM
 
-            bool visible = currentTime >= showTime && currentTime <= hideTime;
+        //    bool visible = currentTime >= showTime && currentTime <= hideTime;
 
-            radioButton1.Visible = visible;
-            radioButton2.Visible = visible;
-        }
+        //    radioButton1.Visible = visible;
+        //    radioButton2.Visible = visible;
+        //}
 
         private void clsoeforem(object sender, FormClosedEventArgs e)
         {
