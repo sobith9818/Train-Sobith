@@ -28,6 +28,7 @@ namespace Sobith_forma
         public Form5()
         {
             InitializeComponent();
+            MessageBox.Show("Form5 Constructor");
 
 
         }
@@ -49,7 +50,7 @@ namespace Sobith_forma
         private void Form5_Load(object sender, EventArgs e)
 
         {
-           
+
 
 
 
@@ -262,6 +263,7 @@ namespace Sobith_forma
                 using (SQLiteConnection con = new SQLiteConnection(connectionString))
                 {
                     con.Open();
+                    string quota = "";
 
                     string query = "SELECT * FROM Bookings WHERE BookingId=@BookingId";
 
@@ -282,19 +284,91 @@ namespace Sobith_forma
                                 comboBox2.Text = reader["ClassType"].ToString();
                                 textBox8.Text = reader["TrainSercherNamePF"].ToString();
 
-                                string quota = reader["Quota"].ToString();
+                                 quota = reader["Quota"].ToString();
 
                                 radioButton1.Checked = quota == "GN";
                                 radioButton2.Checked = quota == "LD";
                                 radioButton3.Checked = quota == "TQ";
                                 radioButton4.Checked = quota == "PT";
 
-                                IsLoadingData = false;
+                                //IsLoadingData = false;
 
-                                listBox1.Visible = false;
-                                listBox2.Visible = false;
+                                //listBox1.Visible = false;
+                                //listBox2.Visible = false;
                             }
                         }
+
+
+                        // ================== Passenger Load ==================
+
+                        dataGridView1.Rows.Clear();
+
+                        if (quota == "GN" || quota == "LD")
+                        {
+                            dataGridView1.RowCount = 6;
+                            LockPassengerOptions = false;
+                        }
+                        else
+                        {
+                            LockPassengerOptions = true;
+                            dataGridView1.RowCount = 4;
+                        }
+
+                        string passengerQuery = @"
+SELECT *
+FROM Passengers
+WHERE BookingId=@BookingId
+ORDER BY Sno";
+
+                        using (SQLiteCommand cmdPassenger = new SQLiteCommand(passengerQuery, con))
+                        {
+                            cmdPassenger.Parameters.AddWithValue("@BookingId", BookingId);
+
+                            using (SQLiteDataReader rd = cmdPassenger.ExecuteReader())
+                            {
+                                int row = 0;
+
+                                while (rd.Read())
+                                {
+                                    dataGridView1.Rows[row].Cells["Column1"].Value = rd["Sno"].ToString();
+                                    dataGridView1.Rows[row].Cells["Column2"].Value = rd["PassengerName"].ToString();
+                                    dataGridView1.Rows[row].Cells["Column3"].Value = rd["Age"].ToString();
+                                    dataGridView1.Rows[row].Cells["colSex"].Value = rd["Gender"].ToString();
+                                    dataGridView1.Rows[row].Cells["Berth"].Value = rd["BerthPreference"].ToString();
+                                    dataGridView1.Rows[row].Cells["Column6"].Value = rd["FoodPreference"].ToString();
+                                    dataGridView1.Rows[row].Cells["Column7"].Value = rd["Nationality"].ToString();
+
+
+                                    if (quota == "TQ" || quota == "PT")
+                                    {
+                                        dataGridView1.Rows[row].Cells["Berth"].Value = "No Preference";
+                                        dataGridView1.Rows[row].Cells["Column6"].Value = "Veg";
+                                        dataGridView1.Rows[row].Cells["Column7"].Value = "Indian";
+                                    }
+                                    else
+                                    {
+                                        dataGridView1.Rows[row].Cells["Berth"].Value = rd["BerthPreference"].ToString();
+                                        dataGridView1.Rows[row].Cells["Column6"].Value = rd["FoodPreference"].ToString();
+                                        dataGridView1.Rows[row].Cells["Column7"].Value = rd["Nationality"].ToString();
+                                    }
+
+
+                                    row++;
+                                }
+                            }
+                        }
+
+                        IsLoadingData = false;
+
+
+
+
+
+
+
+                                           // ================== End Passenger Load ================== 
+
+
                     }
                 }
             }
@@ -461,7 +535,11 @@ CREATE TABLE IF NOT EXISTS Passengers
         }
 
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
+
         {
+            if (IsLoadingData)
+                return;
+
             if (radioButton1.Checked)
             {
                 dataGridView1.Rows.Clear();
@@ -481,7 +559,8 @@ CREATE TABLE IF NOT EXISTS Passengers
 
         private void radioButton3_CheckedChanged(object sender, EventArgs e)
         {
-            
+            if (IsLoadingData)
+                return;
 
 
             if (radioButton3.Checked)
@@ -518,6 +597,8 @@ CREATE TABLE IF NOT EXISTS Passengers
 
         private void radioButton4_CheckedChanged_1(object sender, EventArgs e)
         {
+            if (IsLoadingData)
+                return;
             if (radioButton4.Checked)
             {
                 LockPassengerOptions = true;
@@ -891,7 +972,9 @@ CREATE TABLE IF NOT EXISTS Passengers
 
 
 
-
+            MessageBox.Show(
+    "IsEdit = " + IsEdit +
+    "\nBookingId = " + BookingId);
 
 
             string msg = "";
@@ -997,61 +1080,98 @@ CREATE TABLE IF NOT EXISTS Passengers
             //});
 
 
-            Ticket t = new Ticket();
+            //Ticket t = new Ticket();
 
-            t.numercount = t.numercount = (DataStore.Tickets.Count + 1).ToString(); ;
-            t.passdelsts = textBox8.Text;
-            t.From = textBox1.Text;
-            t.To = textBox3.Text    ;
-            t.Date = dateTimePicker1.Text;
-            t.TrainNo = textBox6.Text;
-            t.TrainName = textBox7.Text;
-            t.ClassType = classType;
-            t.Quota = quota;
+            //t.numercount = t.numercount = (DataStore.Tickets.Count + 1).ToString(); ;
+            //t.passdelsts = textBox8.Text;
+            //t.From = textBox1.Text;
+            //t.To = textBox3.Text    ;
+            //t.Date = dateTimePicker1.Text;
+            //t.TrainNo = textBox6.Text;
+            //t.TrainName = textBox7.Text;
+            //t.ClassType = classType;
+            //t.Quota = quota;
 
-            if (EditIndex == -1)
-            {
-                DataStore.Tickets.Add(t);
-            }
-            else
-            {
-                //DataStore.Tickets[EditIndex] = t;   
-                t.numercount = DataStore.Tickets[EditIndex].numercount;
-                DataStore.Tickets[EditIndex] = t;
-            }
+            //if (EditIndex == -1)
+            //{
+            //    DataStore.Tickets.Add(t);
+            //}
+            //else
+            //{
+            //    //DataStore.Tickets[EditIndex] = t;   
+            //    t.numercount = DataStore.Tickets[EditIndex].numercount;
+            //    DataStore.Tickets[EditIndex] = t;
+            //}
 
             //MessageBox.Show("Data Saved Successfully");
 
 
             //this is datebase create to find area come chek
 
-            try
+            using (SQLiteConnection con = new SQLiteConnection(connectionString))
             {
-                using (SQLiteConnection con = new SQLiteConnection(connectionString))
+                con.Open();
+
+                int bookingId;
+
+                if (IsEdit)
                 {
-                    con.Open();
+                    // ===== UPDATE BLOCK =====
 
                     string query = @"
-        INSERT INTO Bookings
-        (
-            FromStation,
-            ToStation,
-            JourneyDate,
-            TrainNo,
-            ClassType,
-            Quota,
-            TrainSercherNamePF
-        )
-        VALUES
-        (
-            @FromStation,
-            @ToStation,
-            @JourneyDate,
-            @TrainNo,
-            @ClassType,
-            @Quota,
-            @TrainSercherNamePF
-        );";
+UPDATE Bookings
+SET
+    FromStation=@FromStation,
+    ToStation=@ToStation,
+    JourneyDate=@JourneyDate,
+    TrainNo=@TrainNo,
+    ClassType=@ClassType,
+    Quota=@Quota,
+    TrainSercherNamePF=@TrainSercherNamePF
+WHERE BookingId=@BookingId;";
+
+                    using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                    {
+                        cmd.Parameters.AddWithValue("@FromStation", textBox1.Text.Trim());
+                        cmd.Parameters.AddWithValue("@ToStation", textBox3.Text.Trim());
+                        cmd.Parameters.AddWithValue("@JourneyDate", dateTimePicker1.Value.ToString("dd-MM-yyyy"));
+                        cmd.Parameters.AddWithValue("@TrainNo", textBox6.Text.Trim());
+                        cmd.Parameters.AddWithValue("@ClassType", comboBox2.Text);
+                        cmd.Parameters.AddWithValue("@Quota", quota);
+                        cmd.Parameters.AddWithValue("@TrainSercherNamePF", textBox8.Text.Trim());
+                        cmd.Parameters.AddWithValue("@BookingId", BookingId);
+
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    bookingId = BookingId;
+                }
+                else
+                {
+                    // 👈 यहाँ INSERT BLOCK आएगा
+
+
+                    string query = @"
+INSERT INTO Bookings
+(
+    FromStation,
+    ToStation,
+    JourneyDate,
+    TrainNo,
+    ClassType,
+    Quota,
+    TrainSercherNamePF
+)
+VALUES
+(
+    @FromStation,
+    @ToStation,
+    @JourneyDate,
+    @TrainNo,
+    @ClassType,
+    @Quota,
+    @TrainSercherNamePF
+);";
 
                     using (SQLiteCommand cmd = new SQLiteCommand(query, con))
                     {
@@ -1063,24 +1183,43 @@ CREATE TABLE IF NOT EXISTS Passengers
                         cmd.Parameters.AddWithValue("@Quota", quota);
                         cmd.Parameters.AddWithValue("@TrainSercherNamePF", textBox8.Text.Trim());
 
-                         cmd.ExecuteNonQuery();
+                        cmd.ExecuteNonQuery();
 
                         cmd.CommandText = "SELECT last_insert_rowid();";
 
-                        int bookingId = Convert.ToInt32(cmd.ExecuteScalar());
+                        bookingId = Convert.ToInt32(cmd.ExecuteScalar());
+                    }
 
-                        MessageBox.Show("BookingId = " + bookingId);
+                }
 
 
-                        for (int i = 0; i < dataGridView1.Rows.Count; i++)
-                        {
-                            DataGridViewRow row = dataGridView1.Rows[i];
 
-                            // खाली Row Skip
-                            if (row.Cells["Column2"].Value == null)
-                                continue;
 
-                            string queryPassenger = @"
+                // 👈 यहाँ Passenger Save आएगा
+
+
+
+                // ================= PASSENGER BLOCK =================
+
+                if (IsEdit)
+                {
+                    using (SQLiteCommand cmdDelete = new SQLiteCommand(
+                        "DELETE FROM Passengers WHERE BookingId=@BookingId", con))
+                    {
+                        cmdDelete.Parameters.AddWithValue("@BookingId", bookingId);
+                        cmdDelete.ExecuteNonQuery();
+                    }
+                }
+
+                for (int i = 0; i < dataGridView1.Rows.Count; i++)
+                {
+                    DataGridViewRow row = dataGridView1.Rows[i];
+
+                    // खाली Row Skip
+                    if (row.Cells["Column2"].Value == null)
+                        continue;
+
+                    string queryPassenger = @"
 INSERT INTO Passengers
 (
     BookingId,
@@ -1110,70 +1249,33 @@ VALUES
     @ConfirmBerth
 );";
 
-                            using (SQLiteCommand cmdPassenger = new SQLiteCommand(queryPassenger, con))
-                            {
-                                cmdPassenger.Parameters.AddWithValue("@BookingId", bookingId);
+                    using (SQLiteCommand cmdPassenger = new SQLiteCommand(queryPassenger, con))
+                    {
+                        cmdPassenger.Parameters.AddWithValue("@BookingId", bookingId);
+                        cmdPassenger.Parameters.AddWithValue("@Sno", row.Cells["Column1"].Value);
+                        cmdPassenger.Parameters.AddWithValue("@PassengerName", row.Cells["Column2"].Value);
+                        cmdPassenger.Parameters.AddWithValue("@Age", row.Cells["Column3"].Value);
+                        cmdPassenger.Parameters.AddWithValue("@Gender", row.Cells["colSex"].Value);
+                        cmdPassenger.Parameters.AddWithValue("@BerthPreference", row.Cells["Berth"].Value);
+                        cmdPassenger.Parameters.AddWithValue("@FoodPreference", row.Cells["Column6"].Value);
+                        cmdPassenger.Parameters.AddWithValue("@Nationality", row.Cells["Column7"].Value);
+                        cmdPassenger.Parameters.AddWithValue("@Mobile", textBox7.Text.Trim());
+                        cmdPassenger.Parameters.AddWithValue("@AutoUpgrade", checkBox1.Checked ? 1 : 0);
+                        cmdPassenger.Parameters.AddWithValue("@ConfirmBerth", checkBox2.Checked ? 1 : 0);
 
-                                cmdPassenger.Parameters.AddWithValue("@Sno",
-                                    row.Cells["Column1"].Value);
-
-                                cmdPassenger.Parameters.AddWithValue("@PassengerName",
-                                    row.Cells["Column2"].Value);
-
-                                cmdPassenger.Parameters.AddWithValue("@Age",
-                                    row.Cells["Column3"].Value);
-
-                                cmdPassenger.Parameters.AddWithValue("@Gender",
-                                    row.Cells["colSex"].Value);
-
-                                cmdPassenger.Parameters.AddWithValue("@BerthPreference",
-                                    row.Cells["Berth"].Value);
-
-                                cmdPassenger.Parameters.AddWithValue("@FoodPreference",
-                                    row.Cells["Column6"].Value);
-
-                                cmdPassenger.Parameters.AddWithValue("@Nationality",
-                                    row.Cells["Column7"].Value);
-
-                                cmdPassenger.Parameters.AddWithValue("@Mobile",
-                                    textBox7.Text.Trim());
-
-                                cmdPassenger.Parameters.AddWithValue("@AutoUpgrade",
-                                    checkBox1.Checked ? 1 : 0);
-
-                                cmdPassenger.Parameters.AddWithValue("@ConfirmBerth",
-                                    checkBox2.Checked ? 1 : 0);
-
-                                MessageBox.Show(
-    "Row = " + i +
-    "\nName = " + Convert.ToString(row.Cells["Column2"].Value) +
-    "\nAge = " + Convert.ToString(row.Cells["Column3"].Value) +
-    "\nFood = " + Convert.ToString(row.Cells["Column6"].Value)
-);
-
-                                cmdPassenger.ExecuteNonQuery();
-                            }
-                        }
-
+                        cmdPassenger.ExecuteNonQuery();
                     }
                 }
+
+                // ================= END PASSENGER BLOCK =================
+
+                // ================== End Passenger Load ==================
+
+                IsLoadingData = false;
+
+                listBox1.Visible = false;
+                listBox2.Visible = false;
             }
-            catch (SQLiteException ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-
-
-
-
-
-
-
-
 
 
 
@@ -1237,5 +1339,12 @@ VALUES
                 e.Cancel = true;
             }
         }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
     }
+
+
 }

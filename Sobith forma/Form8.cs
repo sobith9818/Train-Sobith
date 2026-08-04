@@ -17,6 +17,7 @@ namespace Sobith_forma
         public Form8()
         {
             InitializeComponent();
+            
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -298,10 +299,18 @@ namespace Sobith_forma
                     Form5 f5 = new Form5();
 
 
-                f5.BookingId = Convert.ToInt32(
-                           dataGridView1.Rows[e.RowIndex].Cells["Column8"].Value);
+                //f5.BookingId = Convert.ToInt32(
+                //           dataGridView1.Rows[e.RowIndex].Cells["Column8"].Value);
 
                 f5.IsEdit = true;
+                //f5.BookingId = BookingId;
+                f5.BookingId = Convert.ToInt32( dataGridView1.Rows[e.RowIndex].Cells[0].Value);
+                MessageBox.Show(
+    "Before Open Form5" +
+    "\nIsEdit = " + f5.IsEdit +
+    "\nBookingId = " + f5.BookingId);
+
+                //f5.ShowDialog();
 
                 f5.ShowDialog();
 
@@ -321,10 +330,48 @@ namespace Sobith_forma
             else if (dataGridView1.Columns[e.ColumnIndex].Name == "Column14")
             {
 
+                //           if (MessageBox.Show("Delete this Booking ?",
+                //"Confirm",
+                //MessageBoxButtons.YesNo,
+                //MessageBoxIcon.Question) == DialogResult.Yes)
+                //           {
+                //               try
+                //               {
+                //                   int bookingId = Convert.ToInt32(
+                //                       dataGridView1.Rows[e.RowIndex].Cells["Column8"].Value);
+
+                //                   using (SQLiteConnection con = new SQLiteConnection(connectionString))
+                //                   {
+                //                       con.Open();
+
+                //                       string query = "DELETE FROM Bookings WHERE BookingId=@BookingId";
+
+                //                       using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                //                       {
+                //                           cmd.Parameters.AddWithValue("@BookingId", bookingId);
+
+                //                           cmd.ExecuteNonQuery();
+
+                //                       }
+
+                //                   }
+
+                //                   MessageBox.Show("Booking Deleted Successfully");
+
+                //                   LoadBookings();
+                //               }
+                //               catch (Exception ex)
+                //               {
+                //                   MessageBox.Show(ex.Message);
+                //               }
+                //           }
+
+
+
                 if (MessageBox.Show("Delete this Booking ?",
-     "Confirm",
-     MessageBoxButtons.YesNo,
-     MessageBoxIcon.Question) == DialogResult.Yes)
+       "Confirm",
+       MessageBoxButtons.YesNo,
+       MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     try
                     {
@@ -335,12 +382,19 @@ namespace Sobith_forma
                         {
                             con.Open();
 
-                            string query = "DELETE FROM Bookings WHERE BookingId=@BookingId";
-
-                            using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                            // 1. पहले Passengers Delete
+                            using (SQLiteCommand cmd = new SQLiteCommand(
+                                "DELETE FROM Passengers WHERE BookingId=@BookingId", con))
                             {
                                 cmd.Parameters.AddWithValue("@BookingId", bookingId);
+                                cmd.ExecuteNonQuery();
+                            }
 
+                            // 2. फिर Booking Delete
+                            using (SQLiteCommand cmd = new SQLiteCommand(
+                                "DELETE FROM Bookings WHERE BookingId=@BookingId", con))
+                            {
+                                cmd.Parameters.AddWithValue("@BookingId", bookingId);
                                 cmd.ExecuteNonQuery();
                             }
                         }
@@ -355,10 +409,6 @@ namespace Sobith_forma
                     }
                 }
 
-
-
-
-
             }
 
 
@@ -367,10 +417,10 @@ namespace Sobith_forma
         private void button2_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show(
-      "Are you sure you want to delete all bookings?",
-      "Confirm",
-      MessageBoxButtons.YesNo,
-      MessageBoxIcon.Question) == DialogResult.Yes)
+    "Are you sure you want to delete all bookings?",
+    "Confirm",
+    MessageBoxButtons.YesNo,
+    MessageBoxIcon.Question) == DialogResult.Yes)
             {
                 try
                 {
@@ -378,15 +428,19 @@ namespace Sobith_forma
                     {
                         con.Open();
 
-                        string query = "DELETE FROM Bookings";
+                        // Passengers Table Delete
+                        using (SQLiteCommand cmd = new SQLiteCommand("DELETE FROM Passengers", con))
+                        {
+                            cmd.ExecuteNonQuery();
+                        }
 
-                        using (SQLiteCommand cmd = new SQLiteCommand(query, con))
+                        // Bookings Table Delete
+                        using (SQLiteCommand cmd = new SQLiteCommand("DELETE FROM Bookings", con))
                         {
                             cmd.ExecuteNonQuery();
                         }
                     }
 
-                    // Grid Refresh
                     LoadBookings();
 
                     MessageBox.Show("All Bookings Deleted Successfully");
@@ -397,7 +451,6 @@ namespace Sobith_forma
                     MessageBox.Show(ex.Message);
                 }
             }
-
 
 
 
